@@ -1,0 +1,15 @@
+name: evogym_env
+channels:
+  - pytorch
+  - conda-forge
+dependencies:
+  - python=3.8
+  - pytorch
+  - torchvision
+  - numpy
+  - matplotlib
+  - pip
+  - pip:
+    - gym==0.21.0
+    - imageio
+    - pyyaml

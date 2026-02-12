@@ -1,0 +1,3 @@
+[submodule "evogym"]
+	path = evogym
+	url = https://github.com/EvolutionGym/evogym.git
