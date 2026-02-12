@@ -3,7 +3,7 @@
 ## Setup
 
 Clone with submodules: 
-`git clone --recursive [URL]`
+`git clone --recursive https://github.com/mk1m/comp0258-evogym-project.git`
 (submodule adds EvoGym repository)
 
 Install Git LFS: 
