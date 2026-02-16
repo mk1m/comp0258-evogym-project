@@ -70,12 +70,6 @@ python evogym/examples/run_ga.py --exp-name test_ga --pop-size 10 --max-evaluati
 
 ### 2. Visualize Full GA Results
 ```bash
-python evogym/examples/run_ga.py --exp-name test_ga --pop-size 10 --max-evaluations 30
-```
-*Note: This will create a `saved_data/` folder with results.*
-
-### 3. Visualize Full GA Results
-```bash
 python evogym/examples/visualize.py --env-name Walker-v0
 ```
 Follow the prompts to select the experiment and robot to view.
