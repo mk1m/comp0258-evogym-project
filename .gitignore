@@ -216,3 +216,5 @@ multirun/
 *.pth
 results/
 saved_data/
+playground/
+!playground/custom_ga/
