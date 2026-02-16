@@ -9,6 +9,7 @@ dependencies:
   - numpy
   - matplotlib
   - pip
+  - cmake
   - pip:
     - gym==0.21.0
     - imageio

@@ -214,4 +214,4 @@ multirun/
 *.so
 *.pkl
 *.pth
-results/
+results/saved_data/
