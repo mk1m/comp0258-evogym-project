@@ -10,17 +10,13 @@ specifically the PPO setup and env wrapping with make_vec_env.
 Usage (from project root):
     python src/eval/run_eval.py \
         --env-names Walker-v0 Balancer-v0 \
+        --body-type walker \
         --total-timesteps 500000 \
-        --eval-interval 10000 \
-        --n-seeds 3 \
-        --exp-name single_task_comparison
-
-Multi-task example:
-    python src/eval/run_eval.py \
-        --env-names Walker-v0 Balancer-v0 \
-        --multi-task \
-        --total-timesteps 500000 \
-        --exp-name multi_task_comparison
+        --eval-interval 35000 \
+        --n-envs 4 \
+        --n-evals 3 \
+        --n-seeds 2 \
+        --exp-name my_experiment
 """
 
 import sys, os
