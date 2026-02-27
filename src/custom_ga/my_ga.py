@@ -72,9 +72,24 @@ def run_ga(args):
             population_structure_hashes[hashable(temp_structure[0])] = True
             num_evaluations += 1
     else:
-        # (Handling continuation omitted for brevity in this custom script, 
-        # but could be added back if needed)
-        pass
+        # Continue previous experiment
+        for g in range(start_gen+1):
+            for i in range(pop_size):
+                save_path_structure = os.path.join("saved_data", exp_name, "generation_" + str(g), "structure", str(i) + ".npz")
+                np_data = np.load(save_path_structure)
+                structure_data = []
+                for key, value in np_data.items():
+                    structure_data.append(value)
+                structure_data = tuple(structure_data)
+                population_structure_hashes[hashable(structure_data[0])] = True
+                
+                # Check for existing label attributes in structure to handle survivors correctly
+                # But for simplicity, we just reconstruct using index
+                if g == start_gen:
+                    structures.append(Structure(*structure_data, i))
+        
+        num_evaluations = len(list(population_structure_hashes.keys()))
+        generation = start_gen
 
     while True:
         percent_survival = get_percent_survival_evals(num_evaluations, max_evaluations)

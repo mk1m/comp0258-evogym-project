@@ -16,12 +16,12 @@ This guide documents how to set up a custom experiment pipeline that keeps your 
 
 ## 2. Isolate Your Work
 To avoid merge conflicts and keep the repo clean:
-1.  Create a `playground/` directory.
-2.  Add `playground/` to your `.gitignore` file.
+1.  Create a `src/` directory.
+2.  Add `src/` to your `.gitignore` file.
     *   *Why?* This lets you experiment freely without accidentally committing junk.
 
-## 3. Create Custom GA Scaffold
-Instead of modifying `evogym/` directly, copy the necessary logic to `playground/custom_ga/`.
+## 3. Create Custom GA
+Instead of modifying `evogym/` directly, copy the necessary logic to `src/custom_ga/`.
 
 We created three key files:
 1.  **`my_utils.py`**:
@@ -38,7 +38,7 @@ We created three key files:
     *   **Usage:** Adds `--env-names` argument to specify target tasks.
 
 ## 4. How to Customize Fitness
-Open `playground/custom_ga/my_utils.py` and find `TASK_WEIGHTS` inside `compute_fitness()`:
+Open `src/custom_ga/my_utils.py` and find `TASK_WEIGHTS` inside `compute_fitness()`:
 
 ```python
 TASK_WEIGHTS = {
@@ -53,7 +53,7 @@ TASK_WEIGHTS = {
 Run your custom script from the project root:
 
 ```bash
-python playground/custom_ga/run_experiment.py \
+python src/custom_ga/run_experiment.py \
     --exp-name my_custom_test \
     --env-names Walker-v0 Carrier-v0 \
     --pop-size 25
@@ -67,3 +67,18 @@ python playground/custom_ga/run_experiment.py \
     0       5.0         {'Walker-v0': 10.0, 'Carrier-v0': 5.0}
     ```
     *(In this example with weights 1.0 and -1.0, Fitness = 10.0 - 5.0 = 5.0)*
+
+## 7. Resuming Experiments
+If your experiment crashes or you stop it (Ctrl+C), you can continue from where you left off.
+
+1.  Run the **exact same command** again.
+2.  The script will detect the existing folder:
+    ```
+    THIS EXPERIMENT (my_custom_test) ALREADY EXISTS
+    Override? (y/n/c):
+    ```
+3.  Type `c` and press **Enter**.
+4.  It will ask: `Enter gen to start training on (0-indexed):`
+5.  Enter the number of the last **fully completed** generation (check `saved_data/my_custom_test/generation_X/output.txt`).
+    *   Example: If `generation_5` has an `output.txt` file, type `5`. The script will reload everything up to Gen 5 and continue.
+

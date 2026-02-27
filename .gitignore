@@ -216,5 +216,8 @@ multirun/
 *.pth
 results/
 saved_data/
-playground/
-!playground/custom_ga/
+src/eval/logs/
+src/eval/plots/
+src/eval/plot_curves.py
+src/eval/generate_matrix.py
+src/eval/run_matrix.sh
