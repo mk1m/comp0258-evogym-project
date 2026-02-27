@@ -9,14 +9,14 @@ specifically the PPO setup and env wrapping with make_vec_env.
 
 Usage (from project root):
     python src/eval/run_eval.py \
-        --env-names Walker-v0 Balancer-v0 \
-        --body-type walker \
-        --total-timesteps 500000 \
-        --eval-interval 35000 \
-        --n-envs 4 \
-        --n-evals 3 \
-        --n-seeds 2 \
-        --exp-name my_experiment
+        --env-names Walker-v0 Balancer-v0 \   # Which tasks to train on (sequentially)
+        --body-type walker \                  # Robot morphology ('random', 'walker', etc.)
+        --total-timesteps 500000 \            # Total PPO training steps per environment
+        --eval-interval 35000 \               # How often to pause training and evaluate
+        --n-envs 4 \                          # Number of CPU cores/parallel envs for PPO
+        --n-evals 3 \                         # Number of episodes averaged per evaluation
+        --n-seeds 1 \                         # Number of independent runs (for variance)
+        --exp-name my_experiment              # Folder name to save CSVs and models
 """
 
 import sys, os
@@ -38,7 +38,7 @@ from evogym.utils import get_full_connectivity
 # Voxel types: 0=empty, 1=rigid, 2=soft, 3=h_act, 4=v_act
 # 'speed_bot' from evogym world_data/speed_bot.json. 
 # Others ('walker', 'balancer', 'climber') are custom designs.
-    # note: balancer body performs terribly even on balancer tasks
+    # note: balancer body performs terribly even on balancer tasks so probably shouldn't use it
 
 PREDEFINED_BODIES = {
     'walker': np.array([
