@@ -120,21 +120,44 @@ class LoggingCallback(BaseCallback):
             writer.writerow([self.num_timesteps, mean_reward])
 
     def _evaluate(self) -> float:
-        # Env setup adapted from evogym/examples/ppo/eval.py
+        # Env setup adapted exactly from evogym/examples/ppo/eval.py
+        # We run self.n_evals episodes and average their total rewards.
+        # It's crucial we don't count rewards after an environment is 'done'.
+        
         eval_env = make_vec_env(self.env_name, n_envs=1, env_kwargs={
             'body': self.body,
             'connections': self.connections,
         })
+        
         rewards = []
+        obs = eval_env.reset()
+        cum_done = np.array([False])
+        
+        # We run until the environment signals done. Because we only use n_envs=1 for
+        # evaluation here to keep it simple, we just run n_evals times.
         for _ in range(self.n_evals):
             obs = eval_env.reset()
-            total_r = 0.0
             done = False
+            total_r = 0.0
+            
             while not done:
                 action, _ = self.model.predict(obs, deterministic=True)
-                obs, r, done, _ = eval_env.step(action)
-                total_r += r[0]
+                obs, r, dones, _ = eval_env.step(action)
+                
+                # In SB3 vec envs, 'dones' is an array of booleans.
+                done = dones[0]
+                
+                # We only add reward if we weren't already done
+                # (SB3 auto-resets, so the next step after done belongs to the *next* episode)
+                if not done:
+                    total_r += r[0]
+                else:
+                    # If it's the terminal step, we include the final terminal reward,
+                    # but then the loop breaks so we don't include the auto-reset observation
+                    total_r += r[0]
+
             rewards.append(total_r)
+            
         eval_env.close()
         return float(np.mean(rewards))
 
