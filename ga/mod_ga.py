@@ -12,9 +12,6 @@ from evogym import sample_robot, hashable
 import utils.mod_mp_group as mp
 from utils.mod_algo_utils import get_percent_survival_evals, mutate, Structure
 
-import warnings
-warnings.filterwarnings("ignore")
-
 def run_ga(
     args: argparse.Namespace,
 ):
