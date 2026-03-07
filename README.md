@@ -11,7 +11,7 @@ I usually run these scripts from the `evogym/examples` folder, so I suggest copy
 - created `visualize_controller1.py` and `visualize_controller2.py` to visualise the two controllers trained in the genetic algorithm
 
 ### Known issues
-- `/ga/mod_ga.py` attempts to copy controllers that have already been trained if they are survivors in the next generation, instead of retraining from scratch. However, this copying frequently fails, making it difficult to find which folder contains which controllers when visualising the results. Worst-case, we could just train all controllers from scratch for each generation, but I'd rather fix this issue.
+- `/ga/mod_ga.py` attempts to copy controllers that have already been trained if they are survivors in the next generation, instead of retraining from scratch (lines 159-179 in that script). However, this copying frequently fails, making it difficult to find which folder contains which controllers when visualising the results. Worst-case, we could just train all controllers from scratch for each generation, but I'd rather fix this issue.
 - I couldn't get `make_gifs.py` to work
 - sometimes `/ppo/run.py` will throw an error and not train a controller, resulting in a reward of 0 for that task
 
