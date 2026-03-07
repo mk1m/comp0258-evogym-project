@@ -30,6 +30,7 @@ I usually run these scripts from the `evogym/examples` folder, so I suggest copy
   ```
 
 ## Setup
+(I used Python 3.10)
 
 ### Prerequisites
 - Anaconda or Miniconda installed.
@@ -37,34 +38,23 @@ I usually run these scripts from the `evogym/examples` folder, so I suggest copy
 ### Installation
 1. Clone with submodules:
    ```bash
-   git clone --recursive https://github.com/ucl-team-35/comp0258-evogym-project.git
-   
-   cd comp0258-evogym-project
+   git clone --recurse-submodules https://github.com/EvolutionGym/evogym.git
    ```
 
-2. Install Git LFS:
+2. Create Environment:
    ```bash
-   git lfs install
+   conda create --name evogym_env python=3.10
    ```
-   (helps with large file storage)
-
-3. Run Setup:
-   ```bash
-   bash scripts/setup_all.sh
-   ```
-   This will create the `evogym_env` conda environment and build the physics engine. It may take a few minutes.
-
-4. Activate Environment:
-   ```bash
+3. Activate environment
+  ```bash
    conda activate evogym_env
+  ```
+
+4. Install necessary packages
+   ```bash
+   pip install evogym stable-baselines3
    ```
 
-5. Verify Installation:
-   Run the included test script to confirm everything is working correctly:
-   ```bash
-   python test_installation.py
-   ```
-   If successful, you will see `EvoGym is correctly installed and working!`.
 
 ## Quick Start (Recommended)
 
