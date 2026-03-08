@@ -11,38 +11,7 @@ I usually run these scripts from the `evogym/examples` folder, so I suggest copy
 - created `visualize_controller1.py` and `visualize_controller2.py` to visualise the two controllers trained in the genetic algorithm
 
 ### Known issues
-- `/ga/mod_ga.py` attempts to copy controllers that have already been trained if they are survivors in the next generation, instead of retraining from scratch (lines 159-179 in that script). However, this copying frequently fails, making it difficult to find which folder contains which controllers when visualising the results. Worst-case, we could just train all controllers from scratch for each generation, but I'd rather fix this issue.
-- I couldn't get `make_gifs.py` to work
-- sometimes `/ppo/run.py` will throw an error and not train a controller, resulting in a reward of 0 for that task
-  - The error is:
-    ```bash
-      File "/Users/zaman_keinath-esmail/Documents/local_documents_mac/Code/COMP0258_EvoGym/evogym/examples/utils/mod_mp_group.py", line 7, in job_wrapper
-    out_value = func(*args)
-    File "/Users/zaman_keinath-esmail/Documents/local_documents_mac/Code/COMP0258_EvoGym/evogym/examples/utils/mod_mp_group.py", line 7, in job_wrapper
-    out_value = func(*args)
-    File "/Users/zaman_keinath-esmail/Documents/local_documents_mac/Code/COMP0258_EvoGym/evogym/examples/utils/mod_mp_group.py", line 7, in job_wrapper
-    out_value = func(*args)
-    File "/Users/zaman_keinath-esmail/Documents/local_documents_mac/Code/COMP0258_EvoGym/evogym/examples/ppo/run.py", line 30, in run_ppo
-    callback = EvalCallback(
-    File "/Users/zaman_keinath-esmail/Documents/local_documents_mac/Code/COMP0258_EvoGym/evogym/examples/ppo/run.py", line 30, in run_ppo
-    callback = EvalCallback(
-    File "/Users/zaman_keinath-esmail/Documents/local_documents_mac/Code/COMP0258_EvoGym/evogym/examples/ppo/run.py", line 30, in run_ppo
-    callback = EvalCallback(
-    File "/Users/zaman_keinath-esmail/Documents/local_documents_mac/Code/COMP0258_EvoGym/evogym/examples/ppo/callback.py", line 55, in __init__
-    os.makedirs(model_save_dir)
-    File "/opt/miniconda3/envs/EvoGym_env_2/lib/python3.10/os.py", line 225, in makedirs
-    mkdir(name, mode)
-    File "/Users/zaman_keinath-esmail/Documents/local_documents_mac/Code/COMP0258_EvoGym/evogym/examples/ppo/callback.py", line 55, in __init__
-    os.makedirs(model_save_dir)
-    File "/Users/zaman_keinath-esmail/Documents/local_documents_mac/Code/COMP0258_EvoGym/evogym/examples/ppo/callback.py", line 55, in __init__
-    os.makedirs(model_save_dir)
-    File "/opt/miniconda3/envs/EvoGym_env_2/lib/python3.10/os.py", line 225, in makedirs
-    mkdir(name, mode)
-    FileExistsError: [Errno 17] File exists: 'saved_data/safe_vs_unsafe_ga_1/generation_0/controller1'
-
-    FileExistsError: [Errno 17] File exists: 'saved_data/safe_vs_unsafe_ga_1/generation_0/controller2'
-    ```
-  (The files there don't exist unless the program has already created them)
+- I haven't got `make_gifs.py` to work
 
 
 ### Example usage
