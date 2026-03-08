@@ -9,8 +9,11 @@ from typing import List
 from ppo.run import run_ppo
 import evogym.envs
 from evogym import sample_robot, hashable
-import utils.mod_mp_group as mp
+import utils.mp_group as mp
 from utils.mod_algo_utils import get_percent_survival_evals, mutate, Structure
+
+import warnings
+warnings.filterwarnings("ignore")
 
 def run_ga(
     args: argparse.Namespace,
@@ -134,16 +137,9 @@ def run_ga(
         save_path_structure = os.path.join("saved_data", exp_name, "generation_" + str(generation), "structure")
         save_path_controller1 = os.path.join("saved_data", exp_name, "generation_" + str(generation), "controller1")
         save_path_controller2 = os.path.join("saved_data", exp_name, "generation_" + str(generation), "controller2")
-        
-        try:
-            os.makedirs(save_path_structure)
-        except:
-            pass
-
-        try:
-            os.makedirs(save_path_controller)
-        except:
-            pass
+        os.makedirs(save_path_structure, exist_ok=True)
+        os.makedirs(save_path_controller1, exist_ok=True)
+        os.makedirs(save_path_controller2, exist_ok=True)
 
         ### SAVE POPULATION DATA ###
         for i in range (len(structures)):
@@ -178,9 +174,9 @@ def run_ga(
                     print(f'Error copying controller for {save_path_controller_part2}.\n')
             else:
                 ppo_args1 = (args,structure.body, env_name1, save_path_controller1, f'{structure.label}', structure.connections)
-                group.add_job(run_ppo, ppo_args1, callback=structure.set_reward1,safety=True)
+                group.add_job(run_ppo, ppo_args1, callback=structure.set_reward1)
                 ppo_args2 = (args,structure.body, env_name2, save_path_controller2, f'{structure.label}', structure.connections)
-                group.add_job(run_ppo, ppo_args2, callback=structure.set_reward2,safety=False)
+                group.add_job(run_ppo, ppo_args2, callback=structure.set_reward2)
                 
 
         group.run_jobs(num_cores)
