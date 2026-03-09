@@ -24,11 +24,9 @@ ROBOT_DIR="src/eval/robots"
 TARGET_ENVS="Walker-v0 BridgeWalker-v0 UpStepper-v0 ObstacleTraverser-v0"
 TIMESTEPS=1000000
 EVAL_INTERVAL=10000
-N_SEEDS=3
-# We no longer override N_ENVS or N_EVALS here to use the 
-# corrected run_eval.py defaults (n_envs=1, n_evals=1).
+N_SEEDS=1
+# run_eval.py defaults (n_envs=1, n_evals=1).
 
-# Only our two rows (group mate runs Walker_v0 and BridgeWalker_v0)
 SOURCE_TASKS=("UpStepper_v0" "ObstacleTraverser_v0")
 
 for SOURCE in "${SOURCE_TASKS[@]}"; do

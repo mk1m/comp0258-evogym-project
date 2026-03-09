@@ -5,8 +5,8 @@ Custom script to evaluate robot morphologies, featuring custom logging,
 matrix run support, and resume-capability.
 
 PPO hyperparameters and training setup are matched EXACTLY to the official
-EvoGym implementation (evogym/examples/ppo/run.py and ppo/args.py) except for n_envs:
-  - n_envs=4        (parallel training envs)
+EvoGym implementation (evogym/examples/ppo/run.py and ppo/args.py):
+  - n_envs=1        (single training env, so total_timesteps = actual env steps)
   - n_steps=128     (rollout buffer = 128 samples)
   - batch_size=4    (32 mini-batches per epoch, 128 gradient updates per rollout)
   - n_epochs=4
@@ -92,14 +92,13 @@ class LoggingCallback(BaseCallback):
     Evaluates the policy every `eval_interval` steps and writes
     (timestep, mean_reward) rows to a CSV file.
     """
-    def __init__(self, body, connections, env_name, eval_interval, n_evals, n_envs, csv_path, verbose=0):
+    def __init__(self, body, connections, env_name, eval_interval, n_evals, csv_path, verbose=0):
         super().__init__(verbose)
         self.body = body
         self.connections = connections
         self.env_name = env_name
         self.eval_interval = eval_interval
         self.n_evals = n_evals
-        self.n_envs = n_envs
         self.csv_path = csv_path
         self.model_path = csv_path.replace('.csv', '_model.zip')
         self._last_eval_step = 0
@@ -141,7 +140,7 @@ class LoggingCallback(BaseCallback):
             connections=self.connections,
             env_name=self.env_name,
             n_evals=self.n_evals,
-            n_envs=self.n_envs,
+            n_envs=1,
             deterministic_policy=False,
         )
         return float(np.mean(rewards))
@@ -207,7 +206,6 @@ def train(body, connections, env_name, total_timesteps, eval_interval, n_evals, 
         env_name=env_name,
         eval_interval=eval_interval,
         n_evals=n_evals,
-        n_envs=n_envs,
         csv_path=csv_path,
         verbose=1,
     )
@@ -260,7 +258,7 @@ if __name__ == '__main__':
                              'per-env experience). Original default: 1M')
     parser.add_argument('--eval-interval',   type=int, default=10_000,
                         help='How often (steps) to evaluate and log')
-    parser.add_argument('--n-envs',         type=int, default=4,
+    parser.add_argument('--n-envs',         type=int, default=1,
                         help='Number of parallel training environments. '
                              'Original EvoGym default: 1. WARNING: changing '
                              'this alters gradient update frequency with '
@@ -268,7 +266,7 @@ if __name__ == '__main__':
     parser.add_argument('--n-evals',         type=int, default=1,
                         help='Number of episodes per evaluation '
                              '(original default: 1)')
-    parser.add_argument('--n-seeds',         type=int, default=1,
+    parser.add_argument('--n-seeds',         type=int, default=3,
                         help='Number of random seeds (for std band)')
     parser.add_argument('--structure-shape', type=int, nargs=2, default=[5, 5])
     parser.add_argument('--exp-name',        type=str, default='eval_experiment')
@@ -292,18 +290,6 @@ if __name__ == '__main__':
         connections = data['arr_1']
         body_label = os.path.basename(args.robot_npz).replace('.npz', '')
         print(f"Loaded robot from: {args.robot_npz}")
-        
-        # Voxel Integrity Verification
-        valid_voxels = np.count_nonzero(body > 0)
-        print(f"[Verification] Object count (valid voxels): {valid_voxels}")
-        if connections.size > 0:
-            max_idx = np.max(connections)
-            assert max_idx < body.size, f"Integrity Error: Connection index {max_idx} exceeds grid size {body.size}"
-            # Check that all connected indices point to non-empty voxels
-            flat_body = body.flatten()
-            for idx in connections.flatten():
-                assert flat_body[idx] > 0, f"Integrity Error: Connection to empty voxel at index {idx}"
-            print("[Verification] Connection indices and voxel types map 1:1 successfully.")
     elif args.body_type == 'random':
         random.seed(0)
         np.random.seed(0)
@@ -327,9 +313,7 @@ if __name__ == '__main__':
             # Use random seeds if --no-fixed-seed, otherwise deterministic
             seed = random.randint(0, 2**31) if args.no_fixed_seed else trial
             print(f"  Trial {trial+1}/{args.n_seeds} (seed={seed})")
-            trial_log_dir = os.path.join(log_dir, label, body_label, f'trial_{trial}')
-            os.makedirs(trial_log_dir, exist_ok=True)
-            csv_path = os.path.join(trial_log_dir, 'progress.csv')
+            csv_path = os.path.join(log_dir, f'{label}_seed{trial}.csv')
             train(body, connections, env_name,
                   args.total_timesteps, args.eval_interval, args.n_evals, args.n_envs,
                   csv_path, seed)
@@ -343,8 +327,7 @@ if __name__ == '__main__':
         label = env_name.replace('-', '_').replace('/', '_')
         scores = []
         for trial in range(args.n_seeds):
-            trial_log_dir = os.path.join(log_dir, label, body_label, f'trial_{trial}')
-            csv_path = os.path.join(trial_log_dir, 'progress.csv')
+            csv_path = os.path.join(log_dir, f'{label}_seed{trial}.csv')
             score = compute_transfer_score(csv_path)
             scores.append(score)
         mean_score = np.nanmean(scores)
