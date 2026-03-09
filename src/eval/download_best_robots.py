@@ -24,6 +24,7 @@ TARGET_TASKS = [
     "UpStepper-v0",
     "ObstacleTraverser-v0",
     "Walker-v0",
+    "BridgeWalker-v0",
 ]
 
 def main():

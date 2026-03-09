@@ -4,27 +4,31 @@ run_eval.py - Evaluate PPO training performance across EvoGym tasks.
 Custom script to evaluate robot morphologies, featuring custom logging,
 matrix run support, and resume-capability.
 
-PPO hyperparameters and env wrapping are matched to the official EvoGym
-implementation (evogym/examples/ppo/run.py and ppo/args.py) so results
-are directly comparable with run_ppo.py runs.
+PPO hyperparameters and training setup are matched EXACTLY to the official
+EvoGym implementation (evogym/examples/ppo/run.py and ppo/args.py):
+  - n_envs=1        (single training env, so total_timesteps = actual env steps)
+  - n_steps=128     (rollout buffer = 128 samples)
+  - batch_size=4    (32 mini-batches per epoch, 128 gradient updates per rollout)
+  - n_epochs=4
+  - learning_rate=2.5e-4
+  - clip_range=0.1
+  - ent_coef=0.01
 
 Usage (from project root):
-    # Using a predefined body:
+    # Using a predefined body (1M timesteps, matching original defaults):
     python src/eval/run_eval.py \
-        --env-names Walker-v0 Balancer-v0 \   # Which tasks to train on
-        --body-type walker \                  # Robot morphology
-        --total-timesteps 600000 \            # Total PPO training steps per env
-        --eval-interval 10000 \               # Evaluate every N steps
-        --n-envs 4 \                          # Parallel training envs
-        --n-evals 4 \                         # Episodes averaged per eval
-        --n-seeds 3 --no-fixed-seed \         # 3 independent trials
-        --exp-name my_experiment              # Folder name for CSVs/models
+        --env-names Walker-v0 UpStepper-v0 \
+        --body-type walker \
+        --total-timesteps 1000000 \
+        --eval-interval 10000 \
+        --n-seeds 3 --no-fixed-seed \
+        --exp-name my_experiment
 
     # Using a robot from HuggingFace dataset (.npz from download_best_robots.py):
     python src/eval/run_eval.py \
         --robot-npz src/eval/robots/UpStepper_v0_best.npz \
         --env-names Walker-v0 BridgeWalker-v0 UpStepper-v0 ObstacleTraverser-v0 \
-        --total-timesteps 600000 \
+        --total-timesteps 1000000 \
         --eval-interval 10000 \
         --n-seeds 3 --no-fixed-seed \
         --exp-name transfer_UpStepper_v0
@@ -120,45 +124,25 @@ class LoggingCallback(BaseCallback):
             writer.writerow([self.num_timesteps, mean_reward])
 
     def _evaluate(self) -> float:
-        # Env setup adapted exactly from evogym/examples/ppo/eval.py
-        # We run self.n_evals episodes and average their total rewards.
-        # It's crucial we don't count rewards after an environment is 'done'.
-        
-        eval_env = make_vec_env(self.env_name, n_envs=1, env_kwargs={
-            'body': self.body,
-            'connections': self.connections,
-        })
-        
-        rewards = []
-        obs = eval_env.reset()
-        cum_done = np.array([False])
-        
-        # We run until the environment signals done. Because we only use n_envs=1 for
-        # evaluation here to keep it simple, we just run n_evals times.
-        for _ in range(self.n_evals):
-            obs = eval_env.reset()
-            done = False
-            total_r = 0.0
-            
-            while not done:
-                action, _ = self.model.predict(obs, deterministic=True)
-                obs, r, dones, _ = eval_env.step(action)
-                
-                # In SB3 vec envs, 'dones' is an array of booleans.
-                done = dones[0]
-                
-                # We only add reward if we weren't already done
-                # (SB3 auto-resets, so the next step after done belongs to the *next* episode)
-                if not done:
-                    total_r += r[0]
-                else:
-                    # If it's the terminal step, we include the final terminal reward,
-                    # but then the loop breaks so we don't include the auto-reset observation
-                    total_r += r[0]
+        """
+        Evaluate the current policy using the EXACT same logic as
+        evogym/examples/ppo/eval.py :: eval_policy().
 
-            rewards.append(total_r)
-            
-        eval_env.close()
+        Key details matched to the original:
+          - deterministic=False  (original default)
+          - Reward zeroed AFTER cum_done is set (terminal step reward excluded)
+          - Rewards summed over time axis, then averaged across evals
+        """
+        from ppo.eval import eval_policy
+        rewards = eval_policy(
+            model=self.model,
+            body=self.body,
+            connections=self.connections,
+            env_name=self.env_name,
+            n_evals=self.n_evals,
+            n_envs=1,
+            deterministic_policy=False,
+        )
         return float(np.mean(rewards))
 
 
@@ -269,13 +253,19 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--env-names', nargs='+', required=True,
                         help='Environments to run, e.g. Walker-v0 Balancer-v0')
-    parser.add_argument('--total-timesteps', type=int, default=1_000_000)
+    parser.add_argument('--total-timesteps', type=int, default=1_000_000,
+                        help='Total env steps (with n_envs=1 this equals actual '
+                             'per-env experience). Original default: 1M')
     parser.add_argument('--eval-interval',   type=int, default=10_000,
                         help='How often (steps) to evaluate and log')
-    parser.add_argument('--n-envs',         type=int, default=4,
-                        help='Number of parallel training environments')
-    parser.add_argument('--n-evals',         type=int, default=5,
-                        help='Number of episodes per evaluation')
+    parser.add_argument('--n-envs',         type=int, default=1,
+                        help='Number of parallel training environments. '
+                             'Original EvoGym default: 1. WARNING: changing '
+                             'this alters gradient update frequency with '
+                             'batch_size=4.')
+    parser.add_argument('--n-evals',         type=int, default=1,
+                        help='Number of episodes per evaluation '
+                             '(original default: 1)')
     parser.add_argument('--n-seeds',         type=int, default=3,
                         help='Number of random seeds (for std band)')
     parser.add_argument('--structure-shape', type=int, nargs=2, default=[5, 5])
