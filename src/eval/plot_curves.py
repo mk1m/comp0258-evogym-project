@@ -77,23 +77,42 @@ if __name__ == '__main__':
     plot_dir = os.path.join('src', 'eval', 'plots')
     os.makedirs(plot_dir, exist_ok=True)
 
-    # Discover all CSVs and group them by condition (everything before _seed<N>)
-    all_csvs = sorted(glob.glob(os.path.join(log_dir, '*.csv')))
-    if not all_csvs:
+    # Discover all CSVs
+    # Case 1: Hierarchical structure (env/body/trial/progress.csv)
+    all_csvs = sorted(glob.glob(os.path.join(log_dir, '**', 'progress.csv'), recursive=True))
+    
+    # Case 2: Legacy flat structure (*_seed*.csv)
+    legacy_csvs = sorted(glob.glob(os.path.join(log_dir, '*.csv')))
+    
+    if not all_csvs and not legacy_csvs:
         print(f"No CSV files found in {log_dir}")
         sys.exit(1)
-
-    # Group by condition name
+    
     conditions = {}
+    
+    # Process hierarchical logs
     for path in all_csvs:
+        # Path: src/eval/logs/exp/env/body/trial/progress.csv
+        rel_path = os.path.relpath(path, log_dir)
+        parts = rel_path.split(os.sep)
+        if len(parts) >= 4:
+            env_name = parts[0]
+            body_label = parts[1]
+            cond = f"{env_name}"
+            conditions.setdefault(cond, []).append(path)
+        else:
+            # Fallback for unexpected depths
+            conditions.setdefault(os.path.dirname(rel_path), []).append(path)
+            
+    # Process legacy logs
+    for path in legacy_csvs:
         fname = os.path.basename(path)
-        # Strip trailing _seed<N>.csv
         m = re.match(r'^(.+)_seed\d+\.csv$', fname)
         if m:
             cond = m.group(1)
             conditions.setdefault(cond, []).append(path)
         else:
-            print(f"Skipping unrecognised file: {fname}")
+            print(f"Skipping unrecognised legacy file: {fname}")
 
     print(f"Found {len(conditions)} condition(s): {list(conditions.keys())}")
 
