@@ -18,8 +18,10 @@ class Structure():
         self.label = label
 
     def compute_fitness(self):
-
-        self.fitness = self.reward1 - self.reward2
+        if self.reward2 > 0:
+            self.fitness = self.reward1 - self.reward2
+        else:
+            self.fitness = self.reward1
         return self.fitness
 
     def set_reward1(self, reward):
