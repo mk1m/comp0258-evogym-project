@@ -221,3 +221,6 @@ src/eval/plots/
 src/eval/plot_curves.py
 src/eval/generate_matrix.py
 src/eval/run_matrix.sh
+src/eval/run_random_baseline.sh
+src/eval/run_transfer_upstepper.py
+src/eval/run_transfer_matrix.sh

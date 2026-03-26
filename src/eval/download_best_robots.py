@@ -25,6 +25,11 @@ TARGET_TASKS = [
     "ObstacleTraverser-v0",
     "Walker-v0",
     "BridgeWalker-v0",
+    "Balancer-v0",
+    "Pusher-v0",
+    "Carrier-v0",
+    "Flipper-v0",
+    "Jumper-v0"
 ]
 
 def main():
